@@ -2,11 +2,13 @@
 
 Fast Game Boy audio emulation with 16‑bit sample output.
 This library is designed for use on low power microcontrollers.
-Hence, there are no floating point operations, and some variable are hard-coded at compile time.
+Hence, there are no floating point operations, and some variables are hard-coded at compile time.
+
+This project uses code from [baines/MiniGBS](https://github.com/baines/MiniGBS).
 
 ## Examples
 - [Peanut-SDL](https://github.com/deltabeard/Peanut-GB/tree/master/examples/sdl2).
-- My fork of [MiniGBS](https://github.com/deltabeard/MiniGBS).
+- [deltabeard/MiniGBS](https://github.com/deltabeard/MiniGBS).
 
 ## Caveats
 
@@ -17,3 +19,7 @@ Hence, there are no floating point operations, and some variable are hard-coded 
 
 - Perform benchmarks against other Game Boy APU emulators.
 - Document inaccuracies in emulation.
+
+# License
+
+MIT. See the LICENSE file.
