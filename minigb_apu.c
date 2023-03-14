@@ -304,7 +304,7 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 void audio_callback(struct minigb_apu_ctx *ctx,
 		int16_t stream[static AUDIO_SAMPLES_TOTAL])
 {
-	memset(stream, 0, AUDIO_SAMPLES_TOTAL);
+	memset(stream, 0, AUDIO_SAMPLES_TOTAL * sizeof(int16_t));
 	update_square(ctx, stream, 0);
 	update_square(ctx, stream, 1);
 	update_wave(ctx, stream);
