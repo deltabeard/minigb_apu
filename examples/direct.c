@@ -38,6 +38,7 @@ int main(void)
 	drwav_bool32 dret;
 	struct userdata u;
 	uint32_t bytes_written = 0;
+	struct minigb_apu_ctx apu_ctx = {0};
 
 	const drwav_data_format pFormat = {
 		drwav_container_riff,
@@ -57,7 +58,7 @@ int main(void)
 	dret = drwav_init_write(&pWav, &pFormat, wav_write, wav_seek, &u, NULL);
 	assert(dret == DRWAV_TRUE);
 
-	audio_init();
+	audio_init(&apu_ctx);
 	
 	while(1)
 	{
@@ -65,13 +66,13 @@ int main(void)
 		{
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
-			audio_callback(NULL, samples, sizeof(samples));
+			audio_callback(&apu_ctx, samples);
 			drwav_write_raw(&pWav, sizeof(samples), samples);
 			bytes_written += sizeof(samples);
 			continue;
 
 		case AUDIO_CMD_SET_REGISTER:
-			audio_write(audio_frame_cmds[cmd].reg,
+			audio_write(&apu_ctx, audio_frame_cmds[cmd].reg,
 					audio_frame_cmds[cmd].val);
 			cmd++;
 			continue;
