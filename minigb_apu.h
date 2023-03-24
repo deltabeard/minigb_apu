@@ -98,29 +98,34 @@ struct minigb_apu_ctx {
 /**
  * Fill allocated buffer "stream" with AUDIO_SAMPLES_TOTAL number of 16-bit
  * signed samples (native endian order) in stereo interleaved format.
- * "sz" must be equal to AUDIO_SAMPLES_TOTAL.
  * Each call corresponds to the the time taken for each VSYNC in the Game Boy.
  *
- * \param userdata Unused. Only kept for ease of use with SDL2.
+ * \param ctx Library context. Must be initialised with audio_init().
  * \param stream Allocated pointer to store audio samples. Must be at least
  *		AUDIO_SAMPLES_TOTAL in size.
- * \param sz Size of stream. Must be AUDIO_SAMPLES_TOTAL.
  */
-void audio_callback(struct minigb_apu_ctx *ctx,
-		int16_t stream[static AUDIO_SAMPLES_TOTAL]);
+void audio_callback(struct minigb_apu_ctx *ctx, int16_t *stream);
 
 /**
  * Read audio register at given address "addr".
+ * \param ctx Library context. Must be initialised with audio_init().
+ * \param addr Address of registers to read. Must be within 0xFF10 and 0xFF3F,
+ *	inclusive.
  */
 uint8_t audio_read(struct minigb_apu_ctx *ctx, const uint16_t addr);
 
 /**
  * Write "val" to audio register at given address "addr".
+ * \param ctx Library context. Must be initialised with audio_init().
+ * \param addr Address of registers to read. Must be within 0xFF10 and 0xFF3F,
+ *	inclusive.
+ * \param val Value to write to address.
  */
 void audio_write(struct minigb_apu_ctx *ctx,
 		const uint16_t addr, const uint8_t val);
 
 /**
  * Initialise audio driver.
+ * \param ctx Library context.
  */
 void audio_init(struct minigb_apu_ctx *ctx);

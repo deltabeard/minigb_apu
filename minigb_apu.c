@@ -301,8 +301,7 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 /**
  * SDL2 style audio callback function.
  */
-void audio_callback(struct minigb_apu_ctx *ctx,
-		int16_t stream[static AUDIO_SAMPLES_TOTAL])
+void audio_callback(struct minigb_apu_ctx *ctx, int16_t *stream)
 {
 	memset(stream, 0, AUDIO_SAMPLES_TOTAL * sizeof(int16_t));
 	update_square(ctx, stream, 0);
