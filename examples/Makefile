@@ -3,3 +3,6 @@ override CFLAGS += -DAUDIO_SAMPLE_RATE=44100
 
 all: direct
 direct: direct.c ../minigb_apu.c
+
+clean:
+	$(RM) direct.exe direct
