@@ -1,32 +1,11 @@
 #include "../minigb_apu.h"
 #include "track.h"
-
-#define DR_WAV_IMPLEMENTATION
-#define DR_WAV_NO_STDIO
-#define DR_WAV_NO_CONVERSION_API
-#include "dr_wav.h"
+#include "mk_wav.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 
 #define LOOP_MAX 5
-#define AUDIO_LENGTH_SAMPLES	(AUDIO_SAMPLE_RATE * AUDIO_LENGTH_SECONDS)
-
-struct userdata {
-	FILE *out;
-};
-
-size_t wav_write(void* pUserData, const void* pData, size_t bytesToWrite)
-{
-	struct userdata *u = pUserData;
-	return fwrite(pData, 1, bytesToWrite, u->out);
-}
-
-drwav_bool32 wav_seek(void* pUserData, int offset, drwav_seek_origin origin)
-{
-	struct userdata *u = pUserData;
-	return fseek(u->out, offset, origin);
-}
 
 int main(void)
 {
@@ -34,29 +13,20 @@ int main(void)
 	int16_t samples[AUDIO_SAMPLES_TOTAL];
 	unsigned cmd = 0;
 	int loop = 0;
-	drwav pWav;
-	drwav_bool32 dret;
-	struct userdata u;
+	FILE *f;
+	struct mk_wav_ctx c;
 	uint32_t bytes_written = 0;
 	struct minigb_apu_ctx apu_ctx = {0};
 
-	const drwav_data_format pFormat = {
-		drwav_container_riff,
-		DR_WAVE_FORMAT_PCM,
-		2,
-		AUDIO_SAMPLE_RATE,
-		16
-	};
-
-	u.out = fopen("audio.wav", "wb");
-	if(u.out == NULL)
+	f = fopen("audio.wav", "wb");
+	if(f == NULL)
 	{
 		perror("Unable to open output file");
 		goto out;
 	}
 
-	dret = drwav_init_write(&pWav, &pFormat, wav_write, wav_seek, &u, NULL);
-	assert(dret == DRWAV_TRUE);
+	ret = mk_wav_init(&c, f, 16, 2, AUDIO_SAMPLE_RATE);
+	assert(ret == 0);
 
 	audio_init(&apu_ctx);
 	
@@ -67,7 +37,8 @@ int main(void)
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
 			audio_callback(&apu_ctx, samples);
-			drwav_write_raw(&pWav, sizeof(samples), samples);
+			//drwav_write_raw(&pWav, sizeof(samples), samples);
+			mk_wav_write(&c, samples, sizeof(samples));
 			bytes_written += sizeof(samples);
 			continue;
 
@@ -93,11 +64,9 @@ int main(void)
 
 	}
 
-	drwav_uninit(&pWav);
-
-	fseek(u.out, 40, SEEK_SET);
-	fwrite(&bytes_written, sizeof(uint32_t), 1, u.out);
-	fclose(u.out);
+	//drwav_uninit(&pWav);
+	mk_wav_exit(&c);
+	fclose(f);
 
 	ret = EXIT_SUCCESS;
 out:
