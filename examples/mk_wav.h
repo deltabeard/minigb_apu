@@ -114,6 +114,8 @@ long mk_wav_exit(struct mk_wav_ctx *c)
 {
 #define WAV_RIFF_SIZE_LOC 0x04
 #define WAV_DATA_SIZE_LOC 0x28
+#define WAV_RIFF_SIZE_COMPENSATION 0x08
+#define WAV_DATA_SIZE_COMPENSATION 0x2C
 	long sz;
 	size_t riff_sz, data_sz;
 
@@ -126,8 +128,8 @@ long mk_wav_exit(struct mk_wav_ctx *c)
 		return sz;
 
 	/* Calculate size of RIFF and DATA chunks. */
-	riff_sz = sz - 8ul;
-	data_sz = sz - 78ul;
+	riff_sz = sz - WAV_RIFF_SIZE_COMPENSATION;
+	data_sz = sz - WAV_DATA_SIZE_COMPENSATION;
 
 	/* Update RIFF and DATA chunk sizes in WAV header. */
 	fseek(c->out, WAV_RIFF_SIZE_LOC, SEEK_SET);
@@ -139,4 +141,6 @@ long mk_wav_exit(struct mk_wav_ctx *c)
 	return fseek(c->out, 0, SEEK_END);
 #undef WAV_RIFF_SIZE_LOC
 #undef WAV_DATA_SIZE_LOC
+#undef WAV_RIFF_SIZE_COMPENSATION
+#undef WAV_DATA_SIZE_COMPENSATION
 }
