@@ -29,14 +29,14 @@
 
 struct chan_len_ctr {
 	uint8_t load;
-	unsigned enabled : 1;
+	uint8_t enabled : 1;
 	uint32_t counter;
 	uint32_t inc;
 };
 
 struct chan_vol_env {
 	uint8_t step;
-	unsigned up : 1;
+	uint8_t up : 1;
 	uint32_t counter;
 	uint32_t inc;
 };
@@ -45,16 +45,16 @@ struct chan_freq_sweep {
 	uint16_t freq;
 	uint8_t rate;
 	uint8_t shift;
-	unsigned up : 1;
+	uint8_t up : 1;
 	uint32_t counter;
 	uint32_t inc;
 };
 
 struct chan {
-	unsigned enabled : 1;
-	unsigned powered : 1;
-	unsigned on_left : 1;
-	unsigned on_right : 1;
+	uint8_t enabled : 1;
+	uint8_t powered : 1;
+	uint8_t on_left : 1;
+	uint8_t on_right : 1;
 
 	uint8_t volume;
 	uint8_t volume_init;
@@ -86,12 +86,13 @@ struct chan {
 };
 
 struct minigb_apu_ctx {
+	struct chan chans[4];
+	int32_t vol_l, vol_r;
+
 	/**
 	 * Memory holding audio registers between 0xFF10 and 0xFF3F inclusive.
 	 */
 	uint8_t audio_mem[AUDIO_MEM_SIZE];
-	struct chan chans[4];
-	int32_t vol_l, vol_r;
 };
 
 /**
