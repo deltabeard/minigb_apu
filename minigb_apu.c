@@ -46,7 +46,6 @@ static void chan_enable(struct minigb_apu_ctx *ctx,
 		(ctx->chans[1].enabled << 1) | (ctx->chans[0].enabled << 0);
 
 	ctx->audio_mem[0xFF26 - AUDIO_ADDR_COMPENSATION] = val;
-	//ctx->audio_mem[0xFF26 - AUDIO_ADDR_COMPENSATION] |= 0x80 | ((uint8_t)enable) << i;
 }
 
 static void update_env(struct chan *c)
@@ -115,8 +114,8 @@ static void update_sweep(struct chan *c)
 	}
 }
 
-static void update_square(struct minigb_apu_ctx *ctx,
-		int16_t *samples, const bool ch2)
+static void update_square(struct minigb_apu_ctx *ctx, int16_t *samples,
+		const bool ch2)
 {
 	struct chan *c = &ctx->chans[ch2];
 
