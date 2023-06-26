@@ -31,7 +31,12 @@
 static void set_note_freq(struct chan *c)
 {
 	/* Lowest expected value of freq is 64. */
-	uint32_t freq = (DMG_CLOCK_FREQ_U / 4) / (2048 - c->freq);
+	uint32_t freq;
+       
+	if(c->freq >= 2048)
+		__builtin_unreachable();
+
+	freq = (DMG_CLOCK_FREQ_U / 4) / (2048 - c->freq);
 	c->freq_inc = freq * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
 }
 
