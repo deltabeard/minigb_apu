@@ -55,7 +55,6 @@ struct chan {
 	unsigned powered : 1;
 	unsigned on_left : 1;
 	unsigned on_right : 1;
-	unsigned muted : 1;
 
 	uint8_t volume;
 	uint8_t volume_init;
