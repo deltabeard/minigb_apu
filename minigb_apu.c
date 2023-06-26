@@ -297,14 +297,19 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 
 	// volume envelope
 	{
-		uint8_t val =
-			ctx->audio_mem[(0xFF12 + (i * 5)) - AUDIO_ADDR_COMPENSATION];
+		const uint32_t inc_lut[] = { 128, 1024, 512, 341, 256, 205, 171 };
+		uint8_t val;
 
-		c->env.step = val & 0x07;
-		c->env.up   = val & 0x08 ? 1 : 0;
-		c->env.inc  = c->env.step ?
-			(FREQ_INC_REF * 64ul) / ((uint32_t)c->env.step * AUDIO_SAMPLE_RATE) :
-			(8ul * FREQ_INC_REF) / AUDIO_SAMPLE_RATE ;
+		val = ctx->audio_mem[(0xFF12 + (i * 5)) - AUDIO_ADDR_COMPENSATION];
+
+		c->env.step = val & 0x7;
+		c->env.up   = val & 0x8 ? 1 : 0;
+		c->env.inc  = inc_lut[c->env.step];
+		/**
+		 * LUT created using (freq_inc_ref * 64)./((0:6) .* sample_rate)
+		 *	(FREQ_INC_REF * 64ul) / ((uint32_t)c->env.step * AUDIO_SAMPLE_RATE) :
+		 *	(8ul * FREQ_INC_REF) / AUDIO_SAMPLE_RATE;
+		 **/
 		c->env.counter = 0;
 	}
 
