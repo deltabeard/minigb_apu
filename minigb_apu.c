@@ -31,8 +31,8 @@
 static void set_note_freq(struct chan *c)
 {
 	/* Lowest expected value of freq is 64. */
-	uint32_t freq = (DMG_CLOCK_FREQ_U / 32) / (2048 - c->freq);
-	c->freq_inc = freq * 8 * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
+	uint32_t freq = (DMG_CLOCK_FREQ_U / 4) / (2048 - c->freq);
+	c->freq_inc = freq * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
 }
 
 static void chan_enable(struct minigb_apu_ctx *ctx,
