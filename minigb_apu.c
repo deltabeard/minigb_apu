@@ -147,9 +147,6 @@ static void update_square(struct minigb_apu_ctx *ctx, int16_t *samples,
 			prev_pos = pos;
 		}
 
-		if (c->muted)
-			continue;
-
 		sample += c->val;
 		sample *= c->volume;
 		sample /= 4;
@@ -214,9 +211,6 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 			sample = sample / (div[c->volume]);
 		}
 
-		if (c->muted)
-			continue;
-
 		sample /= 4;
 
 		samples[i + 0] += sample * c->on_left * ctx->vol_l;
@@ -275,9 +269,6 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 			sample += ((pos - prev_pos) / c->freq_inc) * c->val;
 			prev_pos = pos;
 		}
-
-		if (c->muted)
-			continue;
 
 		sample += c->val;
 		sample *= c->volume;
