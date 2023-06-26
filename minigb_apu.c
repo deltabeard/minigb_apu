@@ -297,7 +297,10 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 
 	// volume envelope
 	{
-		const uint32_t inc_lut[] = { 128, 1024, 512, 341, 256, 205, 171 };
+		const uint32_t inc_lut[8] = {
+			128, 1024, 512, 341,
+			256, 205, 171, 146
+		};
 		uint8_t val;
 
 		val = ctx->audio_mem[(0xFF12 + (i * 5)) - AUDIO_ADDR_COMPENSATION];
