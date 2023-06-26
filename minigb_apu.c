@@ -126,11 +126,13 @@ static void update_square(struct minigb_apu_ctx *ctx, int16_t *samples,
 
 	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
 		update_len(ctx, c);
-
 		if (!c->enabled)
-			continue;
+			return;
 
 		update_env(c);
+		if (!c->volume)
+			continue;
+
 		if (!ch2)
 			update_sweep(c);
 
@@ -174,7 +176,7 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 {
 	struct chan *c = &ctx->chans[2];
 
-	if (!c->powered || !c->enabled)
+	if (!c->powered || !c->enabled || !c->volume)
 		return;
 
 	set_note_freq(c);
@@ -182,13 +184,12 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 
 	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
 		update_len(ctx, c);
-
 		if (!c->enabled)
-			continue;
+			return;
 
 		uint32_t pos      = 0;
 		uint32_t prev_pos = 0;
-		int32_t sample   = 0;
+		int32_t sample    = 0;
 
 		c->wave.sample = wave_sample(ctx, c->val, c->volume);
 
@@ -201,10 +202,6 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 		}
 
 		sample += ((int)c->wave.sample - 8) * (int)(INT16_MAX/64);
-
-		if (c->volume == 0)
-			continue;
-
 		{
 			/* First element is unused. */
 			int16_t div[] = { INT16_MAX, 1, 2, 4 };
@@ -212,7 +209,6 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 		}
 
 		sample /= 4;
-
 		samples[i + 0] += sample * c->on_left * ctx->vol_l;
 		samples[i + 1] += sample * c->on_right * ctx->vol_r;
 	}
@@ -222,7 +218,10 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 {
 	struct chan *c = &ctx->chans[3];
 
-	if (!c->powered)
+	if (c->freq >= 14)
+		c->enabled = 0;
+
+	if (!c->powered || !c->enabled)
 		return;
 
 	{
@@ -235,16 +234,14 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 		c->freq_inc = freq * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
 	}
 
-	if (c->freq >= 14)
-		c->enabled = 0;
-
 	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
 		update_len(ctx, c);
-
 		if (!c->enabled)
-			continue;
+			return;
 
 		update_env(c);
+		if (!c->volume)
+			continue;
 
 		uint32_t pos      = 0;
 		uint32_t prev_pos = 0;
