@@ -28,10 +28,11 @@
 
 #define MAX_CHAN_VOLUME		15
 
-static void set_note_freq(struct chan *c, const uint32_t freq)
+static void set_note_freq(struct chan *c)
 {
 	/* Lowest expected value of freq is 64. */
-	c->freq_inc = freq * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
+	uint32_t freq = (DMG_CLOCK_FREQ_U / 32) / (2048 - c->freq);
+	c->freq_inc = freq * 8 * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
 }
 
 static void chan_enable(struct minigb_apu_ctx *ctx,
@@ -105,9 +106,7 @@ static void update_sweep(struct chan *c)
 			if (c->freq > 2047) {
 				c->enabled = 0;
 			} else {
-				set_note_freq(c,
-					DMG_CLOCK_FREQ_U / ((2048 - c->freq)<< 5));
-				c->freq_inc *= 8;
+				set_note_freq(c);
 			}
 		} else if (c->sweep.rate) {
 			c->enabled = 0;
@@ -119,15 +118,12 @@ static void update_sweep(struct chan *c)
 static void update_square(struct minigb_apu_ctx *ctx,
 		int16_t *samples, const bool ch2)
 {
-	uint32_t freq;
 	struct chan *c = &ctx->chans[ch2];
 
 	if (!c->powered || !c->enabled)
 		return;
 
-	freq = DMG_CLOCK_FREQ_U / ((2048 - c->freq) << 5);
-	set_note_freq(c, freq);
-	c->freq_inc *= 8;
+	set_note_freq(c);
 
 	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
 		update_len(ctx, c);
@@ -180,16 +176,13 @@ static uint8_t wave_sample(struct minigb_apu_ctx *ctx,
 
 static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 {
-	uint32_t freq;
 	struct chan *c = &ctx->chans[2];
 
 	if (!c->powered || !c->enabled)
 		return;
 
-	freq = (DMG_CLOCK_FREQ_U / 64) / (2048 - c->freq);
-	set_note_freq(c, freq);
-
-	c->freq_inc *= 32;
+	set_note_freq(c);
+	c->freq_inc *= 2;
 
 	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
 		update_len(ctx, c);
@@ -246,7 +239,7 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 		uint32_t freq;
 
 		freq = DMG_CLOCK_FREQ_U / (lfsr_div_lut[c->noise.lfsr_div] << c->freq);
-		set_note_freq(c, freq);
+		c->freq_inc = freq * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
 	}
 
 	if (c->freq >= 14)
