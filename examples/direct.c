@@ -15,7 +15,6 @@ int main(void)
 	int loop = 0;
 	FILE *f;
 	struct mk_wav_ctx c;
-	uint32_t bytes_written = 0;
 	struct minigb_apu_ctx apu_ctx = {0};
 
 	f = fopen("audio.wav", "wb");
@@ -39,7 +38,6 @@ int main(void)
 			audio_callback(&apu_ctx, samples);
 			//drwav_write_raw(&pWav, sizeof(samples), samples);
 			mk_wav_write(&c, samples, sizeof(samples));
-			bytes_written += sizeof(samples);
 			continue;
 
 		case AUDIO_CMD_SET_REGISTER:
