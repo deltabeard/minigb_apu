@@ -325,7 +325,7 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 		c->sweep.up    = !(val & 0x08);
 		c->sweep.shift = (val & 0x07);
 		c->sweep.inc   = c->sweep.rate ?
-			((128 * FREQ_INC_REF) / (c->sweep.rate * AUDIO_SAMPLE_RATE)) : 0;
+			((128u * FREQ_INC_REF) / (c->sweep.rate * AUDIO_SAMPLE_RATE)) : 0;
 		c->sweep.counter = FREQ_INC_REF;
 	}
 
@@ -339,7 +339,7 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 		c->val = VOL_INIT_MIN / MAX_CHAN_VOLUME;
 	}
 
-	c->len.inc = (256 * FREQ_INC_REF) / (AUDIO_SAMPLE_RATE * (len_max - c->len.load));
+	c->len.inc = (256u * FREQ_INC_REF) / (AUDIO_SAMPLE_RATE * (len_max - c->len.load));
 	c->len.counter = 0;
 }
 
