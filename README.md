@@ -1,10 +1,12 @@
 # minigb_apu
 
-Fast Game Boy audio emulation with 16‑bit signed sample output.
+Fast[1] Game Boy audio emulation with 16‑bit signed sample output.
 This library is designed for use on low power microcontrollers.
 Hence, there are no floating point operations, and some variables are hard-coded at compile time.
 
 This project uses code from [baines/MiniGBS](https://github.com/baines/MiniGBS).
+
+[1] As of commit [311aa8](https://github.com/deltabeard/minigb_apu/commit/311aa8), this APU can run x450 speed on a Raspberry Pi Pico (RP2040) with a clock speed of 48 MHz and a audio sample rate of 48000 Hz. It runs at x1171 speed with a clock speed of 125 MHz.
 
 ## Examples
 
