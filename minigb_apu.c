@@ -1,5 +1,8 @@
 /**
- * minigb_apu is released under the terms listed within the LICENSE file.
+ * Game Boy APU emulator.
+ * Copyright (c) 2019 Mahyar Koshkouei <mk@deltabeard.com>
+ * Copyright (c) 2017 Alex Baines <alex@abaines.me.uk>
+ * minigb_apu is released under the terms of the MIT license.
  *
  * minigb_apu emulates the audio processing unit (APU) of the Game Boy. This
  * project is based on MiniGBS by Alex Baines: https://github.com/baines/MiniGBS
