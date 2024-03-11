@@ -29,32 +29,32 @@
 
 struct chan_len_ctr {
 	uint8_t load;
-	uint8_t enabled : 1;
+	uint8_t enabled;
 	uint32_t counter;
 	uint32_t inc;
 };
 
 struct chan_vol_env {
 	uint8_t step;
-	uint8_t up : 1;
+	uint8_t up;
 	uint32_t counter;
 	uint32_t inc;
 };
 
 struct chan_freq_sweep {
-	uint16_t freq;
 	uint8_t rate;
 	uint8_t shift;
-	uint8_t up : 1;
+	uint8_t down;
+	uint16_t freq;
 	uint32_t counter;
 	uint32_t inc;
 };
 
 struct chan {
-	uint8_t enabled : 1;
-	uint8_t powered : 1;
-	uint8_t on_left : 1;
-	uint8_t on_right : 1;
+	uint8_t enabled;
+	uint8_t powered;
+	uint8_t on_left;
+	uint8_t on_right;
 
 	uint8_t volume;
 	uint8_t volume_init;

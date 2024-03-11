@@ -101,7 +101,7 @@ static void update_sweep(struct chan *c)
 	while (c->sweep.counter > FREQ_INC_REF) {
 		if (c->sweep.shift) {
 			uint16_t inc = (c->sweep.freq >> c->sweep.shift);
-			if (!c->sweep.up)
+			if (c->sweep.down)
 				inc *= -1;
 
 			c->freq += inc;
@@ -309,7 +309,7 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 		val = ctx->audio_mem[(0xFF12 + (i * 5)) - AUDIO_ADDR_COMPENSATION];
 
 		c->env.step = val & 0x7;
-		c->env.up   = val & 0x8 ? 1 : 0;
+		c->env.up   = val & 0x8;
 		c->env.inc  = inc_lut[c->env.step];
 		/**
 		 * LUT created using (freq_inc_ref * 64)./((0:6) .* sample_rate)
@@ -325,7 +325,7 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 
 		c->sweep.freq  = c->freq;
 		c->sweep.rate  = (val >> 4) & 0x07;
-		c->sweep.up    = !(val & 0x08);
+		c->sweep.down  = (val & 0x08);
 		c->sweep.shift = (val & 0x07);
 		c->sweep.inc   = c->sweep.rate ?
 			((128u * FREQ_INC_REF) / (c->sweep.rate * AUDIO_SAMPLE_RATE)) : 0;
@@ -467,7 +467,7 @@ void audio_write(struct minigb_apu_ctx *ctx,
 		ctx->chans[i].freq |= ((val & 0x07) << 8);
 		/* Intentional fall-through. */
 	case 0xFF23:
-		ctx->chans[i].len.enabled = val & 0x40 ? 1 : 0;
+		ctx->chans[i].len.enabled = val & 0x40;
 		if (val & 0x80)
 			chan_trigger(ctx, i);
 
