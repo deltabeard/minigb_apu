@@ -31,7 +31,7 @@ int main(void)
 		{
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
-			audio_callback(&apu_ctx, samples);
+			minigb_apu_audio_callback(&apu_ctx, samples);
 			fwrite(samples, sizeof(audio_sample_t), AUDIO_SAMPLES_TOTAL, f);
 			continue;
 
