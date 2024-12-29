@@ -20,9 +20,6 @@
 #define MAX(a, b)		( a > b ? a : b )
 #define MIN(a, b)		( a <= b ? a : b )
 
-#define VOL_INIT_MAX		(INT16_MAX/8)
-#define VOL_INIT_MIN		(INT16_MIN/8)
-
 /* Handles time keeping for sound generation.
  * FREQ_INC_REF must be equal to, or larger than AUDIO_SAMPLE_RATE in order
  * to avoid a division by zero error.
@@ -117,7 +114,7 @@ static void update_sweep(struct chan *c)
 	}
 }
 
-static void update_square(struct minigb_apu_ctx *ctx, int16_t *samples,
+static void update_square(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
 		const bool ch2)
 {
 	struct chan *c = &ctx->chans[ch2];
@@ -175,7 +172,7 @@ static uint8_t wave_sample(struct minigb_apu_ctx *ctx,
 	return volume ? (sample >> (volume - 1)) : 0;
 }
 
-static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
+static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
 {
 	struct chan *c = &ctx->chans[2];
 
@@ -190,24 +187,26 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 		if (!c->enabled)
 			return;
 
-		uint32_t pos      = 0;
+		uint32_t pos = 0;
 		uint32_t prev_pos = 0;
-		int32_t sample    = 0;
+		audio_sample_t sample = 0;
 
 		c->wave.sample = wave_sample(ctx, c->val, c->volume);
 
 		while (update_freq(c, &pos)) {
 			c->val = (c->val + 1) & 31;
 			sample += ((pos - prev_pos) / c->freq_inc) *
-				((int)c->wave.sample - 8) * (INT16_MAX/64);
+				((audio_sample_t)c->wave.sample - 8) *
+					(AUDIO_SAMPLE_MAX/64);
 			c->wave.sample = wave_sample(ctx, c->val, c->volume);
 			prev_pos  = pos;
 		}
 
-		sample += ((int)c->wave.sample - 8) * (int)(INT16_MAX/64);
+		sample += ((audio_sample_t)c->wave.sample - 8) *
+				(audio_sample_t)(AUDIO_SAMPLE_MAX/64);
 		{
 			/* First element is unused. */
-			int16_t div[] = { INT16_MAX, 1, 2, 4 };
+			audio_sample_t div[] = { AUDIO_SAMPLE_MAX, 1, 2, 4 };
 			sample = sample / (div[c->volume]);
 		}
 
@@ -217,7 +216,7 @@ static void update_wave(struct minigb_apu_ctx *ctx, int16_t *samples)
 	}
 }
 
-static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
+static void update_noise(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
 {
 	struct chan *c = &ctx->chans[3];
 
@@ -282,9 +281,10 @@ static void update_noise(struct minigb_apu_ctx *ctx, int16_t *samples)
 /**
  * SDL2 style audio callback function.
  */
-void audio_callback(struct minigb_apu_ctx *ctx, int16_t *stream)
+void audio_callback(struct minigb_apu_ctx *restrict ctx,
+		audio_sample_t *restrict stream)
 {
-	memset(stream, 0, AUDIO_SAMPLES_TOTAL * sizeof(int16_t));
+	memset(stream, 0, AUDIO_SAMPLES_TOTAL * sizeof(audio_sample_t));
 	update_square(ctx, stream, 0);
 	update_square(ctx, stream, 1);
 	update_wave(ctx, stream);
@@ -352,7 +352,7 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
  *				This is not checked in this function.
  * \return	Byte at address.
  */
-uint8_t audio_read(struct minigb_apu_ctx *ctx, const uint16_t addr)
+uint8_t minigb_apu_audio_read(struct minigb_apu_ctx *ctx, const uint16_t addr)
 {
 	static const uint8_t ortab[] = {
 		0x80, 0x3f, 0x00, 0xff, 0xbf,
@@ -375,7 +375,7 @@ uint8_t audio_read(struct minigb_apu_ctx *ctx, const uint16_t addr)
  *				This is not checked in this function.
  * \param val	Byte to write at address.
  */
-void audio_write(struct minigb_apu_ctx *ctx,
+void minigb_apu_audio_write(struct minigb_apu_ctx *ctx,
 		const uint16_t addr, const uint8_t val)
 {
 	/* Find sound channel corresponding to register address. */
@@ -495,7 +495,7 @@ void audio_write(struct minigb_apu_ctx *ctx,
 	}
 }
 
-void audio_init(struct minigb_apu_ctx *ctx)
+void minigb_apu_audio_init(struct minigb_apu_ctx *ctx)
 {
 	/* Initialise channels and samples. */
 	memset(ctx->chans, 0, sizeof(ctx->chans));
@@ -510,7 +510,7 @@ void audio_init(struct minigb_apu_ctx *ctx)
 					      0x77, 0xF3, 0xF1 };
 
 		for(uint_fast8_t i = 0; i < sizeof(regs_init); ++i)
-			audio_write(ctx, 0xFF10 + i, regs_init[i]);
+			minigb_apu_audio_write(ctx, 0xFF10 + i, regs_init[i]);
 	}
 
 	/* Initialise Wave Pattern RAM. */
@@ -521,6 +521,6 @@ void audio_init(struct minigb_apu_ctx *ctx)
 					      0xac, 0xdd, 0xda, 0x48 };
 
 		for(uint_fast8_t i = 0; i < sizeof(wave_init); ++i)
-			audio_write(ctx, 0xFF30 + i, wave_init[i]);
+			minigb_apu_audio_write(ctx, 0xFF30 + i, wave_init[i]);
 	}
 }

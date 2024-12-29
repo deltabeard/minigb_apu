@@ -9,7 +9,6 @@
 int main(void)
 {
 	int ret = EXIT_FAILURE;
-	int16_t samples[AUDIO_SAMPLES_TOTAL];
 	unsigned cmd = 0;
 	int loop = 0;
 	FILE *f;
@@ -22,20 +21,22 @@ int main(void)
 		goto out;
 	}
 
-	audio_init(&apu_ctx);
+	minigb_apu_audio_init(&apu_ctx);
 	
 	while(1)
 	{
+		audio_sample_t samples[AUDIO_SAMPLES_TOTAL];
+
 		switch(audio_frame_cmds[cmd].cmd)
 		{
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
 			audio_callback(&apu_ctx, samples);
-			fwrite(samples, sizeof(int16_t), AUDIO_SAMPLES_TOTAL, f);
+			fwrite(samples, sizeof(audio_sample_t), AUDIO_SAMPLES_TOTAL, f);
 			continue;
 
 		case AUDIO_CMD_SET_REGISTER:
-			audio_write(&apu_ctx, audio_frame_cmds[cmd].reg,
+			minigb_apu_audio_write(&apu_ctx, audio_frame_cmds[cmd].reg,
 					audio_frame_cmds[cmd].val);
 			cmd++;
 			continue;
