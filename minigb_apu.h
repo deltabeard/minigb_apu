@@ -26,12 +26,6 @@ typedef int32_t audio_sample_t;
 # define AUDIO_SAMPLE_MIN INT32_MIN
 # define VOL_INIT_MAX (INT32_MAX/8)
 # define VOL_INIT_MIN (INT32_MIN/8)
-#elif defined(MINIGB_APU_AUDIO_FORMAT_F32SYS)
-typedef float audio_sample_t;
-# define AUDIO_SAMPLE_MAX (1.0f)
-# define AUDIO_SAMPLE_MIN (-1.0f)
-# define VOL_INIT_MAX (AUDIO_SAMPLE_MAX/8.0f)
-# define VOL_INIT_MIN (AUDIO_SAMPLE_MIN/8.0f)
 #else
 #error MiniGB APU: Invalid or unsupported audio format selected
 #endif
