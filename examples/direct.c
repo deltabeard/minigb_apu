@@ -1,6 +1,5 @@
 #include "../minigb_apu.h"
 #include "track.h"
-#include "mk_wav.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,18 +13,14 @@ int main(void)
 	unsigned cmd = 0;
 	int loop = 0;
 	FILE *f;
-	struct mk_wav_ctx c;
-	struct minigb_apu_ctx apu_ctx = {0};
+	struct minigb_apu_ctx apu_ctx;
 
-	f = fopen("audio.wav", "wb");
+	f = fopen("audio.raw", "wb");
 	if(f == NULL)
 	{
 		perror("Unable to open output file");
 		goto out;
 	}
-
-	ret = mk_wav_init(&c, f, 16, 2, AUDIO_SAMPLE_RATE);
-	assert(ret == 0);
 
 	audio_init(&apu_ctx);
 	
@@ -36,8 +31,7 @@ int main(void)
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
 			audio_callback(&apu_ctx, samples);
-			//drwav_write_raw(&pWav, sizeof(samples), samples);
-			mk_wav_write(&c, samples, sizeof(samples));
+			fwrite(samples, sizeof(int16_t), AUDIO_SAMPLES_TOTAL, f);
 			continue;
 
 		case AUDIO_CMD_SET_REGISTER:
@@ -62,8 +56,6 @@ int main(void)
 
 	}
 
-	//drwav_uninit(&pWav);
-	mk_wav_exit(&c);
 	fclose(f);
 
 	ret = EXIT_SUCCESS;
