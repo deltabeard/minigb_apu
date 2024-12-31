@@ -101,11 +101,12 @@ static void update_sweep(struct chan *c)
 			if (c->sweep.down)
 				inc *= -1;
 
-			c->freq += inc;
+			c->freq = c->sweep.freq + inc;
 			if (c->freq > 2047) {
 				c->enabled = 0;
 			} else {
 				set_note_freq(c);
+				c->sweep.freq = c->freq;
 			}
 		} else if (c->sweep.rate) {
 			c->enabled = 0;
