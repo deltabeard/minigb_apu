@@ -14,6 +14,9 @@
 #endif
 
 /* The audio output format is in platform native endian. */
+#if !defined(MINIGB_APU_AUDIO_FORMAT_S16SYS) && !defined(MINIGB_APU_AUDIO_FORMAT_S32SYS)
+# define MINIGB_APU_AUDIO_FORMAT_S16SYS
+#endif
 #if defined(MINIGB_APU_AUDIO_FORMAT_S16SYS)
 typedef int16_t audio_sample_t;
 # define AUDIO_SAMPLE_MAX INT16_MAX
@@ -26,8 +29,6 @@ typedef int32_t audio_sample_t;
 # define AUDIO_SAMPLE_MIN INT32_MIN
 # define VOL_INIT_MAX (INT32_MAX/8)
 # define VOL_INIT_MIN (INT32_MIN/8)
-#else
-#error MiniGB APU: Invalid or unsupported audio format selected
 #endif
 
 #define DMG_CLOCK_FREQ		4194304.0

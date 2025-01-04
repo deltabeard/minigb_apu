@@ -8,5 +8,8 @@ override CFLAGS += -DAUDIO_SAMPLE_RATE=$(SAMPLERATE) \
 all: direct
 direct: direct.c ../minigb_apu.c
 
+minigb_apu.S : ../minigb_apu.c
+	$(CC) -S $(CFLAGS) $^ -o $@
+
 clean:
 	$(RM) direct.exe direct

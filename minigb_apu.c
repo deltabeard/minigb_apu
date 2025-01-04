@@ -100,6 +100,7 @@ static void update_sweep(struct chan *c)
 {
 	c->sweep.counter += c->sweep.inc;
 
+#if 0
 	while (c->sweep.counter > FREQ_INC_REF) {
 		if (c->sweep.shift) {
 			uint16_t inc = (c->sweep.freq >> c->sweep.shift);
@@ -118,6 +119,32 @@ static void update_sweep(struct chan *c)
 		}
 		c->sweep.counter -= FREQ_INC_REF;
 	}
+#else
+	if (c->sweep.shift)	{
+		while (c->sweep.counter > FREQ_INC_REF) {
+			uint16_t inc = (c->sweep.freq >> c->sweep.shift);
+			if (c->sweep.down) {
+				inc *= -1;
+			}
+
+			c->freq = c->sweep.freq + inc;
+			if (c->freq > 2047) {
+				c->enabled = 0;
+			} else {
+				set_note_freq(c);
+				c->sweep.freq = c->freq;
+			}
+
+			c->sweep.counter -= FREQ_INC_REF;
+		}
+	} else if (c->sweep.counter > FREQ_INC_REF) {
+		if (c->sweep.rate) {
+			c->enabled = 0;
+		}
+
+		c->sweep.counter %= FREQ_INC_REF;
+	}
+#endif
 }
 
 static void update_square(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
