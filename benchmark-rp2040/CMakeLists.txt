@@ -10,8 +10,9 @@ add_executable(benchmark-rp2040 benchmark.c ../minigb_apu.c)
 
 # To obtain track data.
 target_include_directories(benchmark-rp2040 PRIVATE ../examples)
-target_compile_definitions(benchmark-rp2040 PRIVATE AUDIO_SAMPLE_RATE=48000)
-target_link_libraries(benchmark-rp2040 pico_stdlib hardware_sync)
+target_compile_definitions(benchmark-rp2040 PRIVATE AUDIO_SAMPLE_RATE=48000 MINIGB_APU_AUDIO_FORMAT_S16SYS)
+set(CMAKE_C_FLAGS_RELEASE "-Ofast -ffast-math -DNDEBUG")
+target_link_libraries(benchmark-rp2040 pico_stdlib hardware_sync hardware_clocks)
 
 function(pico_add_verbose_dis_output TARGET)
 	add_custom_command(TARGET ${TARGET} POST_BUILD
@@ -20,7 +21,7 @@ function(pico_add_verbose_dis_output TARGET)
 		)
 endfunction()
 
-pico_set_binary_type(benchmark-rp2040 copy_to_ram)
+pico_set_binary_type(benchmark-rp2040 no_flash)
 pico_enable_stdio_usb(benchmark-rp2040 1)
 pico_add_bin_output(benchmark-rp2040)
 pico_add_uf2_output(benchmark-rp2040)

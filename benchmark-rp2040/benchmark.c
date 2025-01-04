@@ -1,5 +1,6 @@
 #include <pico/stdlib.h>
 #include <hardware/sync.h>
+#include <hardware/clocks.h>
 #include <stdio.h>
 
 #include "../minigb_apu.h"
@@ -11,15 +12,15 @@ void process_apu(void)
 {
 	struct minigb_apu_ctx apu_ctx = {0};
 	unsigned cmd = 0, loop = 0;
-	int16_t samples[AUDIO_SAMPLES_TOTAL];
-	audio_init(&apu_ctx);
+	audio_sample_t samples[AUDIO_SAMPLES_TOTAL];
+	minigb_apu_audio_init(&apu_ctx);
 	while(1)
 	{
 		switch(audio_frame_cmds[cmd].cmd)
 		{
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
-			audio_callback(&apu_ctx, samples);
+			minigb_apu_audio_callback(&apu_ctx, samples);
 			continue;
 
 		case AUDIO_CMD_SET_REGISTER:
