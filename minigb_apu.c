@@ -20,11 +20,16 @@
 #define MAX(a, b)		( a > b ? a : b )
 #define MIN(a, b)		( a <= b ? a : b )
 
+/* Factor in which values are multiplied to compensate for fixed-point
+ * arithmetic. Some hard-coded values in this project must be recreated. */
+#ifndef FREQ_INC_MULT
+# define FREQ_INC_MULT		105
+#endif
 /* Handles time keeping for sound generation.
  * FREQ_INC_REF must be equal to, or larger than AUDIO_SAMPLE_RATE in order
  * to avoid a division by zero error.
  * Using a square of 2 simplifies calculations. */
-#define FREQ_INC_REF		(AUDIO_SAMPLE_RATE * 16)
+#define FREQ_INC_REF		(AUDIO_SAMPLE_RATE * FREQ_INC_MULT)
 
 #define MAX_CHAN_VOLUME		15
 
@@ -301,9 +306,24 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 
 	// volume envelope
 	{
+		/* LUT created in Julia with:
+		 * `(FREQ_INC_MULT * 64)./vcat(8, 1:7)`
+		 * Must be recreated when FREQ_INC_MULT modified.
+		 */
 		const uint32_t inc_lut[8] = {
+#if FREQ_INC_MULT == 16
 			128, 1024, 512, 341,
-			256, 205, 171, 146
+			256,  205, 171, 146
+#elif FREQ_INC_MULT == 64
+            512,  4096, 2048, 1365,
+            1024,  819,  683,  585
+#elif FREQ_INC_MULT == 105
+            /* Multiples of 105 provide integer values. */
+            840,  6720, 3360, 2240,
+            1680, 1344, 1120,  960
+#else
+#error "LUT not calculated for this value of FREQ_INC_MULT"
+#endif
 		};
 		uint8_t val;
 
@@ -312,11 +332,6 @@ static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)
 		c->env.step = val & 0x7;
 		c->env.up   = val & 0x8;
 		c->env.inc  = inc_lut[c->env.step];
-		/**
-		 * LUT created using (freq_inc_ref * 64)./((0:6) .* sample_rate)
-		 *	(FREQ_INC_REF * 64ul) / ((uint32_t)c->env.step * AUDIO_SAMPLE_RATE) :
-		 *	(8ul * FREQ_INC_REF) / AUDIO_SAMPLE_RATE;
-		 **/
 		c->env.counter = 0;
 	}
 
