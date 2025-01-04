@@ -57,15 +57,18 @@ static void update_env(struct chan *c)
 {
 	c->env.counter += c->env.inc;
 
-	while (c->env.counter > FREQ_INC_REF) {
-		if (c->env.step) {
+	if (c->env.step) {
+		while (c->env.counter > FREQ_INC_REF) {
 			c->volume += c->env.up ? 1 : -1;
 			if (c->volume == 0 || c->volume == MAX_CHAN_VOLUME) {
 				c->env.inc = 0;
 			}
 			c->volume = MAX(0, MIN(MAX_CHAN_VOLUME, c->volume));
+			c->env.counter -= FREQ_INC_REF;
 		}
-		c->env.counter -= FREQ_INC_REF;
+	} else if (c->env.counter > FREQ_INC_REF) {
+		c->volume = MAX(0, MIN(MAX_CHAN_VOLUME, c->volume));
+		c->env.counter %= FREQ_INC_REF;
 	}
 }
 
