@@ -15,7 +15,7 @@
 #include "minigb_apu.h"
 
 #define DMG_CLOCK_FREQ_U	((unsigned)DMG_CLOCK_FREQ)
-#define AUDIO_NSAMPLES		(AUDIO_SAMPLES_TOTAL)
+//#define AUDIO_NSAMPLES		(AUDIO_SAMPLES_TOTAL)
 
 #define MAX(a, b)		( a > b ? a : b )
 #define MIN(a, b)		( a <= b ? a : b )
@@ -121,7 +121,7 @@ static void update_sweep(struct chan *c)
 }
 
 static void update_square(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
-		const bool ch2)
+		const bool ch2, unsigned n_samples)
 {
 	struct chan *c = &ctx->chans[ch2];
 
@@ -130,7 +130,7 @@ static void update_square(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
 
 	set_note_freq(c);
 
-	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
+	for (uint_fast16_t i = 0; i < n_samples; i += 2) {
 		update_len(ctx, c);
 		if (!c->enabled)
 			return;
@@ -178,7 +178,8 @@ static uint8_t wave_sample(struct minigb_apu_ctx *ctx,
 	return volume ? (sample >> (volume - 1)) : 0;
 }
 
-static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
+static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
+		unsigned n_samples)
 {
 	struct chan *c = &ctx->chans[2];
 
@@ -188,7 +189,7 @@ static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
 	set_note_freq(c);
 	c->freq_inc *= 2;
 
-	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
+	for (uint_fast16_t i = 0; i < n_samples; i += 2) {
 		update_len(ctx, c);
 		if (!c->enabled)
 			return;
@@ -222,7 +223,8 @@ static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
 	}
 }
 
-static void update_noise(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
+static void update_noise(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
+		unsigned n_samples)
 {
 	struct chan *c = &ctx->chans[3];
 
@@ -242,7 +244,7 @@ static void update_noise(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
 		c->freq_inc = freq * (uint32_t)(FREQ_INC_REF / AUDIO_SAMPLE_RATE);
 	}
 
-	for (uint_fast16_t i = 0; i < AUDIO_NSAMPLES; i += 2) {
+	for (uint_fast16_t i = 0; i < n_samples; i += 2) {
 		update_len(ctx, c);
 		if (!c->enabled)
 			return;
@@ -288,13 +290,13 @@ static void update_noise(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
  * SDL2 style audio callback function.
  */
 void minigb_apu_audio_callback(struct minigb_apu_ctx *restrict ctx,
-		audio_sample_t *restrict stream)
+		audio_sample_t *restrict stream, unsigned n_samples)
 {
-	memset(stream, 0, AUDIO_SAMPLES_TOTAL * sizeof(audio_sample_t));
-	update_square(ctx, stream, 0);
-	update_square(ctx, stream, 1);
-	update_wave(ctx, stream);
-	update_noise(ctx, stream);
+	memset(stream, 0, n_samples * sizeof(audio_sample_t));
+	update_square(ctx, stream, 0, n_samples);
+	update_square(ctx, stream, 1, n_samples);
+	update_wave(ctx, stream, n_samples);
+	update_noise(ctx, stream, n_samples);
 }
 
 static void chan_trigger(struct minigb_apu_ctx *ctx, uint_fast8_t i)

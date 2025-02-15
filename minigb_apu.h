@@ -122,7 +122,7 @@ struct minigb_apu_ctx {
  *		AUDIO_SAMPLES_TOTAL in size.
  */
 void minigb_apu_audio_callback(struct minigb_apu_ctx *restrict ctx,
-		audio_sample_t *restrict stream);
+		audio_sample_t *restrict stream, unsigned n_samples);
 
 /**
  * Read audio register at given address "addr".

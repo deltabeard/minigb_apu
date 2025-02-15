@@ -25,14 +25,18 @@ int main(void)
 	
 	while(1)
 	{
-		audio_sample_t samples[AUDIO_SAMPLES_TOTAL];
+#define SAMPLES_N 32
+		audio_sample_t samples[SAMPLES_N];
 
 		switch(audio_frame_cmds[cmd].cmd)
 		{
 		case AUDIO_CMD_END_FRAME:
 			cmd++;
-			minigb_apu_audio_callback(&apu_ctx, samples);
-			fwrite(samples, sizeof(audio_sample_t), AUDIO_SAMPLES_TOTAL, f);
+			for (unsigned i = 0; i < AUDIO_SAMPLES_TOTAL; i += SAMPLES_N)
+			{
+				minigb_apu_audio_callback(&apu_ctx, samples, SAMPLES_N);
+				fwrite(samples, sizeof(audio_sample_t), SAMPLES_N, f);
+			}
 			continue;
 
 		case AUDIO_CMD_SET_REGISTER:
