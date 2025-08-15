@@ -7,6 +7,8 @@ override CFLAGS += -DAUDIO_SAMPLE_RATE=$(SAMPLERATE) \
 
 all: direct
 direct: direct.c ../minigb_apu.c
+convert:
+	ffmpeg -f s16le -ar 48000 -ac 2 -i audio.raw -filter:a "volume=0.5" -c:a libopus -b:a 128k audio.opus
 
 clean:
 	$(RM) direct.exe direct
