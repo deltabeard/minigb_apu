@@ -164,7 +164,7 @@ static void update_square(struct minigb_apu_ctx *ctx, audio_sample_t *samples,
 	}
 }
 
-static uint8_t wave_sample(struct minigb_apu_ctx *ctx,
+static int8_t wave_sample(struct minigb_apu_ctx *ctx,
 		const unsigned int pos, const unsigned int volume)
 {
 	uint8_t sample;
@@ -175,7 +175,9 @@ static uint8_t wave_sample(struct minigb_apu_ctx *ctx,
 	} else {
 		sample >>= 4;
 	}
-	return volume ? (sample >> (volume - 1)) : 0;
+
+	int8_t signed_sample = (int8_t)sample - 8;
+	return volume ? (signed_sample >> (volume - 1)) : 0;
 }
 
 static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
@@ -202,14 +204,14 @@ static void update_wave(struct minigb_apu_ctx *ctx, audio_sample_t *samples)
 		while (update_freq(c, &pos)) {
 			c->val = (c->val + 1) & 31;
 			sample += ((pos - prev_pos) / c->freq_inc) *
-				((audio_sample_t)c->wave.sample - 8) *
-					(AUDIO_SAMPLE_MAX/64);
+				((audio_sample_t)c->wave.sample) *
+					(AUDIO_SAMPLE_MAX/32);
 			c->wave.sample = wave_sample(ctx, c->val, c->volume);
 			prev_pos  = pos;
 		}
 
-		sample += ((audio_sample_t)c->wave.sample - 8) *
-				(audio_sample_t)(AUDIO_SAMPLE_MAX/64);
+		sample += ((audio_sample_t)c->wave.sample) *
+				(audio_sample_t)(AUDIO_SAMPLE_MAX/32);
 		{
 			/* First element is unused. */
 			audio_sample_t div[] = { AUDIO_SAMPLE_MAX, 1, 2, 4 };
